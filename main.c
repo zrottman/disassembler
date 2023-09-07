@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 typedef enum Template { A, B, C, D, A2, B2, C2, E2, A3, B3, E3, VACANT } Template;
 
@@ -128,6 +130,19 @@ int main() {
 	    0b00011111,
 	    0b01011000,
     };
+
+    int fd = open("input.ob", O_RDONLY);
+    if (fd < 0) {
+	    printf("open failed\n");
+	    exit(1);
+    }
+    lseek(fd, 0x68, SEEK_SET);
+    size_t n = 4 * 17;
+    uint8_t buf[n];
+    if (read(fd, buf, n) != n) {
+	    printf("read failed\n");
+	    exit(1);
+    }
 
     if (get_template(instruction) == B) {
 	    printf("great success!\n");
