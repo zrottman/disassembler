@@ -143,6 +143,36 @@ void print_d(uint8_t *instruction)
     printf("immediate constant 3: %d\n", output);
 }
 
+void print_a2(uint8_t *instruction) {
+
+    uint32_t im6;
+
+    print_a(instruction);
+
+    im6 = instruction[4];
+    im6 |= instruction[5] << 8;
+    im6 |= instruction[6] << 16;
+    im6 |= instruction[7] << 24;
+
+    printf("IM6: %d\n", im6);
+
+}
+
+void print_b2(uint8_t *instruction) {
+
+    uint32_t im6;
+
+    print_b(instruction);
+
+    im6 = instruction[4];
+    im6 |= instruction[5] << 8;
+    im6 |= instruction[6] << 16;
+    im6 |= instruction[7] << 24;
+
+    printf("IM6: %d\n", im6);
+
+}
+
 enum template get_template_0(uint8_t *instruction)
 {
     switch (read_mode1(instruction)) {
@@ -187,9 +217,9 @@ enum template get_template_1(uint8_t *instruction)
             return JUMP_TODO;
         case 7:
             if ((0 <= read_opcode_6(instruction)) && (read_opcode_6(instruction) < 16)) {
-                return D;
+                return D; // 1.7D
             }
-            return C;
+            return C; // 1.7C
         default:
 	       printf("error 1\n");
             exit(1);
@@ -202,7 +232,7 @@ enum template get_template_2(uint8_t *instruction)
         case 0:
             switch (read_m_bit(instruction)) {
                 case 0:
-                    return E2;
+                    return E2; 
                 case 1:
                     return A2;
             }
@@ -217,11 +247,12 @@ enum template get_template_2(uint8_t *instruction)
         case 5:
             switch (read_opcode_6(instruction)) {
                 case 3:
-                    return A2;
-                case 1:
-                case 2:
-                    return B2;
-                case 4:
+                    printf("2.5.0 A2\n");
+                    return A2; // 2.5.0
+                case 1: // 2.5.1
+                case 2: // 2.5.2
+                    return B2; 
+                case 4: // 
                 case 5:
                 case 7:
                     return C2;
@@ -341,10 +372,12 @@ int main(int argc, char **argv) {
                 break;
             case A2:
                 printf("template A2\n");
+                print_a2(p);
                 p += 8;
                 break;
             case B2:
                 printf("template B2\n");
+                print_b2(p);
                 p += 8;
                 break;
             case C2:
