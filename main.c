@@ -313,6 +313,16 @@ enum template get_template(uint8_t *instruction)
     }
 }
 
+void print_hex(uint8_t *instruction, size_t n)
+{
+    for (int i=0; i<n/4; ++i) {
+        for (int j=3; j>=0; --j) {
+            printf("%x ", instruction[i*4 + j]);
+        }
+    }
+    printf("\n");
+}
+
 int main(int argc, char **argv) {
 
     // validate command line input
@@ -345,63 +355,72 @@ int main(int argc, char **argv) {
     uint8_t *p = buf;
 
     while (p < buf + n) {
-        for (int i=3; i>=0; --i) {
-            printf("%x ", p[i]);
-        }
         printf("\n");
         switch (get_template(p)) {
             case A:
                 printf("template A\n");
+                print_hex(p, 4);
                 print_a(p);
                 p += 4;
                 break;
             case B:
                 printf("template B\n");
+                print_hex(p, 4);
                 print_b(p);
                 p += 4;
                 break;
             case C:
                 printf("template C\n");
+                print_hex(p, 4);
                 print_c(p);
                 p += 4;
                 break;
             case D:
                 printf("template D\n");
+                print_hex(p, 4);
                 print_d(p);
                 p += 4;
                 break;
             case A2:
                 printf("template A2\n");
+                print_hex(p, 8);
                 print_a2(p);
                 p += 8;
                 break;
             case B2:
                 printf("template B2\n");
+                print_hex(p, 8);
                 print_b2(p);
                 p += 8;
                 break;
             case C2:
                 printf("template C2\n");
+                print_hex(p, 8);
                 p += 8;
                 break;
             case E2:
                 printf("template E2\n");
+                print_hex(p, 8);
                 p += 8;
                 break;
             case A3:
                 printf("template A3\n");
+                print_hex(p, 12);
                 p += 12;
                 break;
             case B3:
                 printf("template B3\n");
+                print_hex(p, 12);
                 p += 12;
                 break;
             case E3:
                 printf("template E3\n");
+                print_hex(p, 12);
                 p += 12;
                 break;
             case JUMP_TODO:
                 printf("jump template 1.6A or 1.7B\n");
+                print_hex(p, 4);
                 p += 4;
                 break;
             default:
