@@ -4,20 +4,23 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-typedef enum Template { A, B, C, D, A2, B2, C2, E2, A3, B3, E3, VACANT, JUMP_TODO } Template;
+enum template { A, B, C, D, A2, B2, C2, E2, A3, B3, E3, VACANT, JUMP_TODO };
 
+/* access IL bits */
 uint8_t read_len(uint8_t *instruction)
 {
     uint8_t instr_mask = 0b11000000; // xc0
     return (instr_mask & instruction[3]) >> 6;
 }
 
+/* access mode bits */
 uint8_t read_mode1(uint8_t *instruction)
 {
     uint8_t mode1_mask = 0b00111000; // x38
     return (mode1_mask & instruction[3]) >> 3;
 }
 
+/* access OP1 (?) bits */
 uint8_t read_opcode_6(uint8_t *instruction)
 {
     uint8_t mask_1 = 0b00000111;
@@ -25,12 +28,14 @@ uint8_t read_opcode_6(uint8_t *instruction)
     return ((instruction[3] & mask_1) << 3 | (instruction[2] & mask_2) >> 5);
 }
 
+/* access M bit */
 uint8_t read_m_bit(uint8_t *instruction)
 {
 	uint8_t mask = 0b10000000;
 	return (instruction[1] & mask) >> 7;
 }
 
+/* parse and output A template instruction */
 void print_a(uint8_t *instruction)
 {
     uint8_t mask;
@@ -65,6 +70,7 @@ void print_a(uint8_t *instruction)
 	printf("source register T: %d\n", output);
 }
 
+/* parse and output B template instruction */
 void print_b(uint8_t *instruction)
 {
 	uint8_t mask;
@@ -94,6 +100,7 @@ void print_b(uint8_t *instruction)
 	printf("immediate constant: %d\n", output);
 }
 
+/* parse and output C template instruction */
 void print_c(uint8_t *instruction)
 {
     uint8_t mask;
@@ -114,6 +121,7 @@ void print_c(uint8_t *instruction)
     printf("immediate constant 1: %d\n", output);
 }
 
+/* parse and output D template instruction */
 void print_d(uint8_t *instruction)
 {
     uint8_t mask;
@@ -135,9 +143,7 @@ void print_d(uint8_t *instruction)
     printf("immediate constant 3: %d\n", output);
 }
 
-
-
-Template get_template_0(uint8_t *instruction)
+enum template get_template_0(uint8_t *instruction)
 {
     switch (read_mode1(instruction)) {
         case 0:
@@ -162,7 +168,7 @@ Template get_template_0(uint8_t *instruction)
     }
 }
 
-Template get_template_1(uint8_t *instruction)
+enum template get_template_1(uint8_t *instruction)
 {
     switch (read_mode1(instruction)) {
         case 0:
@@ -190,7 +196,7 @@ Template get_template_1(uint8_t *instruction)
     }
 }
 
-Template get_template_2(uint8_t *instruction)
+enum template get_template_2(uint8_t *instruction)
 {
     switch (read_mode1(instruction)) {
         case 0:
@@ -230,7 +236,7 @@ Template get_template_2(uint8_t *instruction)
     }
 }
 
-Template get_template_3(uint8_t *instruction)
+enum template get_template_3(uint8_t *instruction)
 {
     switch (read_mode1(instruction)) {
         case 0:
@@ -260,8 +266,7 @@ Template get_template_3(uint8_t *instruction)
     }
 }
 
-    
-Template get_template(uint8_t *instruction)
+enum template get_template(uint8_t *instruction)
 {
     switch (read_len(instruction)) {
         case 0:
@@ -277,16 +282,30 @@ Template get_template(uint8_t *instruction)
     }
 }
 
-int main() {
+int main(int argc, char **argv) {
 
-    int fd = open("memset.ob", O_RDONLY);
+    // validate command line input
+    if (argc != 2) {
+        printf("usage: disassembler <assembly_file>\n");
+        return 1;
+    }
+
+    //int fd = open("memset.ob", O_RDONLY);
+    int fd = open(argv[1], O_RDONLY);
+    
+    // open file
     if (fd < 0) {
 	    printf("open failed\n");
 	    exit(1);
     }
-    lseek(fd, 0x68, SEEK_SET);
+
+    // TODO: replace hard coded start and end points.
+    // consider searching for 4 bytes set to 0 and then for 4 bytes not set to 0 and
+    // start reading there until we see 0 x 4 bytes again?
+    lseek(fd, 0x68, SEEK_SET); // why 0x68?
     size_t n = 4 * 17;
     uint8_t buf[n];
+
     if (read(fd, buf, n) != n) {
 	    printf("read failed\n");
 	    exit(1);
